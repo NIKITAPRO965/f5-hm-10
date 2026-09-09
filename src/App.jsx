@@ -1,12 +1,11 @@
-import { Component } from 'react'
-import { nanoid } from 'nanoid'
-import './App.css'
+import { Component } from "react";
+import { nanoid } from "nanoid";
+import "./App.css";
 // import Form from "./components/Form"
 
-import ContactForm from './components/ContactForm';
-import ContactList from './components/ContactList';
-import Filter from './components/Filter';
-
+import ContactForm from "./components/ContactForm";
+import ContactList from "./components/ContactList";
+import Filter from "./components/Filter";
 
 // class App extends Component{
 
@@ -19,7 +18,7 @@ import Filter from './components/Filter';
 
 //     handleAppSubmitForm = (data) => {
 //       console.log("отриманні дані в Апп", data);
-      
+
 //       this.setState({
 //         appName: data.name,
 //         appSecondName: data.secondName,
@@ -27,11 +26,6 @@ import Filter from './components/Filter';
 //         appActiveCheck: data.activeCheck,
 //       })
 //     }
-
-
-
-
-
 
 //   render(){
 
@@ -47,23 +41,29 @@ import Filter from './components/Filter';
 //   }
 // }
 
+const STORAGE_KEY = "phonebook-contacts";
 
 class App extends Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
+    contacts: [],
+    filter: "",
   };
+
+  componentDidMount() {
+    const savedContacts = localStorage.getItem(STORAGE_KEY);
+
+    if (savedContacts) {
+      this.setState({
+        contacts: JSON.parse(savedContacts),
+      });
+    }
+  }
 
   addContact = (name, number) => {
     const { contacts } = this.state;
 
     const isDuplicate = contacts.some(
-      contact => contact.name.toLowerCase() === name.toLowerCase()
+      (contact) => contact.name.toLowerCase() === name.toLowerCase(),
     );
 
     if (isDuplicate) {
@@ -77,29 +77,39 @@ class App extends Component {
       number,
     };
 
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact],
-    }));
+    this.setState(
+      (prevState) => ({
+        contacts: [...prevState.contacts, newContact],
+      }),
+      () => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.contacts));
+      },
+    );
   };
 
-  changeFilter = event => {
+  changeFilter = (event) => {
     this.setState({
       filter: event.currentTarget.value,
     });
   };
 
-  getVisibleContacts = () => {
-    const { contacts, filter } = this.state;
-
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(filter.toLowerCase())
+  deleteContact = (id) => {
+    this.setState(
+      (prevState) => ({
+        contacts: prevState.contacts.filter((contact) => contact.id !== id),
+      }),
+      () => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.contacts));
+      },
     );
   };
 
-  deleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
+  getVisibleContacts = () => {
+    const { contacts, filter } = this.state;
+
+    return contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(filter.toLowerCase()),
+    );
   };
 
   render() {
@@ -109,16 +119,9 @@ class App extends Component {
     return (
       <div>
         <h1>Phonebook</h1>
-
         <ContactForm onSubmit={this.addContact} />
-
         <h2>Contacts</h2>
-
-        <Filter
-          value={filter}
-          onChange={this.changeFilter}
-        />
-
+        <Filter value={filter} onChange={this.changeFilter} />
         <ContactList
           contacts={visibleContacts}
           onDeleteContact={this.deleteContact}
@@ -128,7 +131,4 @@ class App extends Component {
   }
 }
 
-
-export default App
-
-
+export default App;
