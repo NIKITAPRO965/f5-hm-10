@@ -1,22 +1,18 @@
-import { Component } from 'react';
+
+import { useContext } from 'react';
+import { ContactContext } from '../ContactContext';
 import ContactListItem from './ContactListItem';
 
-class ContactList extends Component {
-  render() {
-    const { contacts, onDeleteContact } = this.props;
+function ContactList() {
+  const { visibleContacts } = useContext(ContactContext);
 
-    return (
-      <ul>
-        {contacts.map(contact => (
-          <ContactListItem
-            key={contact.id}
-            contact={contact}
-            onDeleteContact={onDeleteContact}
-          />
-        ))}
-      </ul>
-    );
-  }
+  return (
+    <ul>
+      {visibleContacts.map(contact => (
+        <ContactListItem key={contact.id} contact={contact} />
+      ))}
+    </ul>
+  );
 }
 
 export default ContactList;

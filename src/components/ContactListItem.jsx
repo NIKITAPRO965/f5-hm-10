@@ -1,22 +1,21 @@
-import { Component } from 'react';
 
-class ContactListItem extends Component {
-  render() {
-    const { contact, onDeleteContact } = this.props;
+import { useContext } from 'react';
+import { ContactContext } from '../ContactContext';
 
-    return (
-      <li>
-        {contact.name}: {contact.number}
+function ContactListItem({ contact }) {
+  const { deleteContact } = useContext(ContactContext);
 
-        <button
-          type="button"
-          onClick={() => onDeleteContact(contact.id)}
-        >
-          Delete
-        </button>
-      </li>
-    );
-  }
+  return (
+    <li>
+      {contact.name}: {contact.number}{' '}
+      <button
+        type="button"
+        onClick={() => deleteContact(contact.id)}
+      >
+        Delete
+      </button>
+    </li>
+  );
 }
 
 export default ContactListItem;

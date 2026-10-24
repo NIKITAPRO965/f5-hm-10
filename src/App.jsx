@@ -1,11 +1,3 @@
-import { Component } from "react";
-import { nanoid } from "nanoid";
-import "./App.css";
-// import Form from "./components/Form"
-
-import ContactForm from "./components/ContactForm";
-import ContactList from "./components/ContactList";
-import Filter from "./components/Filter";
 
 // class App extends Component{
 
@@ -41,99 +33,89 @@ import Filter from "./components/Filter";
 //   }
 // }
 
-const STORAGE_KEY = "phonebook-contacts";
 
-class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: "",
-  };
 
-  componentDidMount() {
-    const savedContacts = localStorage.getItem(STORAGE_KEY);
+import { useState, useEffect } from 'react';
+import { nanoid } from 'nanoid';
+import './App.css';
 
-    if (savedContacts) {
-      this.setState({
-        contacts: JSON.parse(savedContacts),
-      });
+import { ContactContext } from './ContactContext';
+import ContactForm from './components/ContactForm';
+import ContactList from './components/ContactList'
+import Filter from './components/Filter'
+
+const STORAGE_KEY = 'phonebook-contacts';
+
+function App() {
+  const [contacts, setContacts] = useState(() => {
+    try {
+      const savedContacts = localStorage.getItem(STORAGE_KEY);
+      return savedContacts ? JSON.parse(savedContacts) : [];
+    } catch {
+      return [];
     }
-  }
+  });
 
-  addContact = (name, number) => {
-    const { contacts } = this.state;
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));
+  }, [contacts]);
+
+  const addContact = (name, number) => {
+    const normalizedName = name.trim();
 
     const isDuplicate = contacts.some(
-      (contact) => contact.name.toLowerCase() === name.toLowerCase(),
+      contact =>
+        contact.name.toLowerCase() === normalizedName.toLowerCase()
     );
 
     if (isDuplicate) {
-      alert(`${name} is already in contacts.`);
-      return;
+      alert(`${normalizedName} is already in contacts.`);
+      return false;
     }
 
-    const newContact = {
-      id: nanoid(),
-      name,
-      number,
-    };
-
-    this.setState(
-      (prevState) => ({
-        contacts: [...prevState.contacts, newContact],
-      }),
-      () => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.contacts));
+    setContacts(prevContacts => [
+      ...prevContacts,
+      {
+        id: nanoid(),
+        name: normalizedName,
+        number: number.trim(),
       },
+    ]);
+
+    return true;
+  };
+
+  const deleteContact = id => {
+    setContacts(prevContacts =>
+      prevContacts.filter(contact => contact.id !== id)
     );
   };
 
-  changeFilter = (event) => {
-    this.setState({
-      filter: event.currentTarget.value,
-    });
+  const visibleContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter.trim().toLowerCase())
+  );
+
+  const contextValue = {
+    addContact,
+    deleteContact,
+    visibleContacts,
+    filter,
+    setFilter,
   };
 
-  deleteContact = (id) => {
-    this.setState(
-      (prevState) => ({
-        contacts: prevState.contacts.filter((contact) => contact.id !== id),
-      }),
-      () => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.contacts));
-      },
-    );
-  };
-
-  getVisibleContacts = () => {
-    const { contacts, filter } = this.state;
-
-    return contacts.filter((contact) =>
-      contact.name.toLowerCase().includes(filter.toLowerCase()),
-    );
-  };
-
-  render() {
-    const { filter } = this.state;
-    const visibleContacts = this.getVisibleContacts();
-
-    return (
+  return (
+    <ContactContext.Provider value={contextValue}>
       <div>
         <h1>Phonebook</h1>
-        <ContactForm onSubmit={this.addContact} />
+        <ContactForm />
         <h2>Contacts</h2>
-        <Filter value={filter} onChange={this.changeFilter} />
-        <ContactList
-          contacts={visibleContacts}
-          onDeleteContact={this.deleteContact}
-        />
+        <Filter />
+        <ContactList />
       </div>
-    );
-  }
+    </ContactContext.Provider>
+  );
 }
 
 export default App;

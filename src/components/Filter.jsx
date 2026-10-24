@@ -1,20 +1,20 @@
-import { Component } from 'react';
 
-class Filter extends Component {
-  render() {
-    const { value, onChange } = this.props;
+import { useContext } from 'react';
+import { ContactContext } from '../ContactContext';
 
-    return (
-      <label>
-        Find contacts by name
-        <input
-          type="text"
-          value={value}
-          onChange={onChange}
-        />
-      </label>
-    );
-  }
+function Filter() {
+  const { filter, setFilter } = useContext(ContactContext);
+
+  return (
+    <label>
+      Find contacts by name
+      <input
+        type="text"
+        value={filter}
+        onChange={event => setFilter(event.target.value)}
+      />
+    </label>
+  );
 }
 
 export default Filter;
